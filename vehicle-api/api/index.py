@@ -1,40 +1,30 @@
-from flask import Flask, request, jsonify
-import requests
-import os
+from flask import Flask, jsonify
 
 app = Flask(__name__)
-
-TARGET_URL = "https://www.smcinsurance.com/central/centralcall/CallReqWithHeader"
 
 
 @app.route("/", methods=["GET"])
 def home():
     return jsonify({
-        "status": True,
+        "success": True,
         "message": "Vehicle API is running",
-        "endpoint": "/api/vehicle"
+        "developer": "Awnish",
+        "endpoints": {
+            "vehicle": "/api/vehicle?number=MH14ML9572"
+        }
     })
 
 
-@app.route("/api/vehicle", methods=["GET", "POST"])
-def vehicle():
+@app.route("/api", methods=["GET"])
+def api_home():
+    return jsonify({
+        "success": True,
+        "message": "Vehicle API endpoint is working"
+    })
 
-    if request.method == "GET":
-        vehicle_no = request.args.get("number", "").strip().upper()
-    else:
-        data = request.get_json(silent=True) or {}
-        vehicle_no = str(data.get("number", "")).strip().upper()
 
-    if not vehicle_no:
-        return jsonify({
-            "status": False,
-            "error": "Vehicle number is required"
-        }), 400
-
-    payload = {
-        "URL": "GetVaahanDetailsByVehicleNo",
-        "Props": [vehicle_no],
-        "Token": ""
+if __name__ == "__main__":
+    app.run()        "Token": ""
     }
 
     headers = {
