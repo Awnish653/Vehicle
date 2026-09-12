@@ -35,6 +35,66 @@ def vehicle():
 
     headers = {
         "User-Agent": "Mozilla/5.0",
+        "Accept": "application/json, text/plain, */*",
+        "Content-Type": "application/json",
+        "Origin": "https://www.smcinsurance.com",
+        "Referer": "https://www.smcinsurance.com/"
+    }
+
+    try:
+        response = requests.post(
+            TARGET_URL,
+            json=payload,
+            headers=headers,
+            timeout=30
+        )
+
+        # Get raw response
+        raw = response.text
+
+        # Decode JSON
+        try:
+            data = json.loads(raw)
+        except json.JSONDecodeError:
+            data = raw
+
+        # Handle JSON encoded as a string
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except json.JSONDecodeError:
+                pass
+
+        # Handle case where "data" itself is a JSON string
+        if isinstance(data, dict) and isinstance(data.get("data"), str):
+            try:
+                data["data"] = json.loads(data["data"])
+            except json.JSONDecodeError:
+                pass
+
+        return jsonify({
+            "success": response.ok,
+            "vehicle_number": number,
+            "http_status": response.status_code,
+            "data": data
+        }), response.status_code
+
+    except requests.exceptions.Timeout:
+        return jsonify({
+            "success": False,
+            "error": "Target server timed out"
+        }), 504
+
+    except requests.exceptions.RequestException as e:
+        return jsonify({
+            "success": False,
+            "error": "Request failed",
+            "details": str(e)
+        }), 502
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000)        "User-Agent": "Mozilla/5.0",
         "Accept": "application/json",
         "Content-Type": "application/json",
         "Origin": "https://www.smcinsurance.com",
