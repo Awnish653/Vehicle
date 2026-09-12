@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 import requests
+import json
 
 app = Flask(__name__)
 
@@ -48,12 +49,21 @@ def vehicle():
             timeout=20
         )
 
+        # Get the complete response
         try:
             data = response.json()
         except ValueError:
             data = {
                 "raw_response": response.text
             }
+
+        # If upstream returned JSON inside a string,
+        # decode it so the complete response becomes proper JSON.
+        if isinstance(data, str):
+            try:
+                data = json.loads(data)
+            except (json.JSONDecodeError, TypeError):
+                pass
 
         return jsonify({
             "success": response.ok,
